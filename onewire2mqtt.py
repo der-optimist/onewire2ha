@@ -17,7 +17,7 @@ for sensor in sensorlist:
     print('Family: ' + sensor.family)
     print('ID: ' + sensor.id)
     print('Type: ' + sensor.type)
-    print('Temp: ' . sensor.temperature11)
+    print('Temp: ' + sensor.temperature11)
     sensor_name = "onewire_" + sensor.family + "_" + sensor.id
     config_topic = "homeassistant/sensor/" + sensor_name + "/config"
     state_topic = "homeassistant/sensor/" + sensor_name + "/state"
