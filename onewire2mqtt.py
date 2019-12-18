@@ -29,7 +29,7 @@ dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAB2CD191302": "24",
                   "28.AA71DC191302": "25",
                   "28.AAC7471A1302": "26",
-                  "28.45950C161301": "serverschrank",
+                  "28.45950C161301_test": "serverschrank",
                   }
 
 # init MQTT Client
