@@ -69,7 +69,8 @@ for sensor in sensorlist:
         value = owproxy.read(sensor + 'temperature11')
         sensor_name = create_sensor_name(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
-        print('Value: ' + str(value))
+        print('Value: {}'.format(value))
+        print(type(value))
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
