@@ -69,7 +69,7 @@ for sensor in sensorlist:
         value = owproxy.read(sensor + 'temperature11')
         sensor_name = create_sensor_name(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
-        print('Value: {}'.format(value))
+        print('Value: {}'.format(float(value)))
         print(type(value))
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
@@ -87,7 +87,7 @@ while True:
             sensor_name = create_sensor_name(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature11')
-            print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,value))
+            print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
             client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
