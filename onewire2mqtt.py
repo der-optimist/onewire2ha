@@ -46,7 +46,7 @@ ow.init('localhost:4304')
 sensorlist = ow.Sensor('/').sensorList()
 
 # delete old sensor entry from tesing phase
-client.publish("homeassistant/sensor/onewire_28_45950c161301/config", payload='', qos=1, retain=False)
+client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
 
 def create_sensor_name(family, id_, dict_ids_names):
     # translage with dict_ids_name
