@@ -142,5 +142,11 @@ async def main():
     await asyncio.sleep(300)
 
 loop = asyncio.get_event_loop()
-loop.run_forever()
-loop.close()
+try:
+    asyncio.ensure_future(main())
+    loop.run_forever()
+except KeyboardInterrupt:
+    pass
+finally:
+    print("Closing Loop")
+    loop.close()
