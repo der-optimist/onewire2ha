@@ -5,9 +5,7 @@ from onewire2mqtt_config import *
 # knx stuff
 import asyncio
 from xknx import XKNX
-from xknx.knx import DPT2ByteFloat
-from xknx.io import GatewayScanner, Tunnel
-from xknx.telegram import GroupAddress, PhysicalAddress, Telegram
+from xknx.knx import DPT2ByteFloat, GroupAddress, PhysicalAddress, Telegram
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
