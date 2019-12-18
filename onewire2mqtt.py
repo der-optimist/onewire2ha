@@ -41,6 +41,12 @@ client.connect(mqtt_host)
 ow.init('localhost:4304')
 sensorlist = ow.Sensor('/').sensorList()
 
+def sensor_name(family, id_, dict_ids_names):
+    # translage with dict_ids_name
+    sensor_base_name = dict_ids_names.get(family + "." + id_,default=family + "_" + id_)
+    sensor_name = "onewire_" + sensor_base_name
+    return sensor_name
+
 for sensor in sensorlist:
     print('Device Found')
     print('Address: ' + sensor.address)
@@ -48,9 +54,7 @@ for sensor in sensorlist:
     print('ID: ' + sensor.id)
     print('Type: ' + sensor.type)
     print('Temp: ' + sensor.temperature11)
-    # translage with dict_ids_name
-    sensor_base_name = dict_ids_names[sensor.family + "." + sensor.id,sensor.family + "_" + sensor.id]
-    sensor_name = "onewire_" + sensor_base_name
+    sensor_name = sensor_name(sensor.family, sensor.id, dict_ids_names)
     print(sensor_name)
     config_topic = "homeassistant/sensor/" + sensor_name + "/config"
     state_topic = "homeassistant/sensor/" + sensor_name + "/state"
@@ -61,9 +65,7 @@ for sensor in sensorlist:
 
 for sensor in sensorlist:
     print('Sending value for sensor id ' + sensor.id)
-    # translage with dict_ids_name
-    sensor_base_name = dict_ids_names[sensor.family + "." + sensor.id,sensor.family + "_" + sensor.id]
-    sensor_name = "onewire_" + sensor_base_name
+    sensor_name = sensor_name(sensor.family, sensor.id, dict_ids_names)
     state_topic = "homeassistant/sensor/" + sensor_name + "/state"
     client.publish(state_topic, payload=float(sensor.temperature11), qos=1, retain=False)
     time.sleep(0.1)
