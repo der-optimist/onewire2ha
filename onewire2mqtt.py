@@ -44,6 +44,9 @@ client.connect(mqtt_host)
 ow.init('localhost:4304')
 sensorlist = ow.Sensor('/').sensorList()
 
+# delete old sensor entry from tesing phase
+client.publish("homeassistant/sensor/sensor.onewire_28_45950c161301/config", payload='', qos=1, retain=False)
+
 def create_sensor_name(family, id_, dict_ids_names):
     # translage with dict_ids_name
     sensor_base_name = dict_ids_names.get(family + "." + id_,"id_" + family + "_" + id_)
