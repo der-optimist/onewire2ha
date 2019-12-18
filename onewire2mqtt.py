@@ -6,7 +6,7 @@ from onewire2mqtt_config import *
 import asyncio
 from xknx import XKNX
 from xknx.io import GatewayScanner, Tunnel
-from xknx.knx import DPT2ByteFloat, GroupAddress, PhysicalAddress, Telegram
+from xknx.knx import DPTTemperature, GroupAddress, PhysicalAddress, Telegram
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
@@ -121,7 +121,7 @@ async def main():
     await tunnel.connect_udp()
     await tunnel.connect()
 
-    await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPT2ByteFloat(50)))
+    await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPTTemperature().to_knx(50.1)))
     await tunnel.connectionstate()
     await tunnel.disconnect()
     for sensor in sensorlist:
