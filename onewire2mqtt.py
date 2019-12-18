@@ -142,5 +142,5 @@ async def main():
     await asyncio.sleep(300)
 
 loop = asyncio.get_event_loop()
-loop.run_forever(main())
+loop.run_forever()
 loop.close()
