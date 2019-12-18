@@ -1,4 +1,5 @@
-import ow
+#import ow
+import pyownet
 import paho.mqtt.client as mqtt
 import time
 from onewire2mqtt_config import *
@@ -34,7 +35,7 @@ dict_ids_names = {"28.AA13CA381401": "01",
 
 # wait for OWFS and MQTT, especially after reboot or 
 print('Will sleep to give OWFS and MQTT some time...')
-time.sleep(60)
+#time.sleep(60)
 
 # init MQTT Client
 client = mqtt.Client(client_name )
@@ -42,15 +43,18 @@ client.username_pw_set(mqtt_user, password=mqtt_passwd)
 client.connect(mqtt_host)
 
 # init onewire
-ow.init('localhost:4304')
-sensorlist = ow.Sensor('/').sensorList()
+owproxy = pyownet.protocol.proxy(host="localhost", port=4304)
+sensorlist = owproxy.dir()
+print(sensorlist)
+#ow.init('localhost:4304')
+#sensorlist = ow.Sensor('/').sensorList()
 
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
 
-def create_sensor_name(family, id_, dict_ids_names):
+def create_sensor_name(sensor, dict_ids_names):
     # translage with dict_ids_name
-    sensor_base_name = dict_ids_names.get(family + "." + id_,"id_" + family + "_" + id_)
+    sensor_base_name = dict_ids_names.get(sensor.replace("/",""),sensor.replace("/","").replace(".","_"))
     sensor_name = "onewire_" + sensor_base_name
     return sensor_name
 
@@ -64,12 +68,9 @@ def create_state_topic(sensor_name):
 for sensor in sensorlist:
     try:
         print('Device Found')
-        print('Address: ' + sensor.address)
-        print('Family: ' + sensor.family)
-        print('ID: ' + sensor.id)
-        print('Type: ' + sensor.type)
-        print('Temp: ' + sensor.temperature11)
-        sensor_name = create_sensor_name(sensor.family, sensor.id, dict_ids_names)
+        print('Address: ' + sensor)
+        value = owproxy.read(sensor + 'temperature11')
+        sensor_name = create_sensor_name(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
@@ -77,19 +78,20 @@ for sensor in sensorlist:
         config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
         client.publish(config_topic, payload=config_payload, qos=1, retain=False)
     except Exception as e:
-        print('Error during config of sensor ' + sensor.family + '.' + sensor.id + ":")
+        print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
     time.sleep(0.1)
 
 while True:
     for sensor in sensorlist:
         try:
-            print('Sending value for sensor id ' + sensor.id)
-            sensor_name = create_sensor_name(sensor.family, sensor.id, dict_ids_names)
+            print('Sending value for sensor ' + sensor.replace("/",""))
+            sensor_name = create_sensor_name(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
-            client.publish(state_topic, payload=float(sensor.temperature11), qos=1, retain=False)
+            value = owproxy.read(sensor + 'temperature11')
+            client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
-            print('Error during sending value of sensor ' + sensor.family + '.' + sensor.id + ":")
+            print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
         time.sleep(0.1)
     time.sleep(300)
