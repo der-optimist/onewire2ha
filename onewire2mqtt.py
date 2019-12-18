@@ -47,7 +47,7 @@ for sensor in sensorlist:
     print('Family: ' + sensor.family)
     print('ID: ' + sensor.id)
     print('Type: ' + sensor.type)
-    print('Temp: ' . sensor.temperature11)
+    print('Temp: ' + sensor.temperature11)
     # translage with dict_ids_name
     sensor_base_name = dict_ids_names[sensor.family + "." + sensor.id,sensor.family + "_" + sensor.id]
     sensor_name = "onewire_" + sensor_base_name
