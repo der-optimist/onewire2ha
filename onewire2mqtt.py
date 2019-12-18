@@ -39,7 +39,6 @@ print('Will sleep to give OWFS and MQTT some time...')
 # init MQTT Client
 client = mqtt.Client(client_name )
 client.username_pw_set(mqtt_user, password=mqtt_passwd)
-client.connect(mqtt_host)
 
 # init onewire
 owproxy = pyownet.protocol.proxy(host="localhost", port=4304)
@@ -62,6 +61,7 @@ def create_state_topic(sensor_name):
     return "homeassistant/sensor/" + sensor_name + "/state"
 
 # define sensors in home assistant via MQTT Discovery
+client.connect(mqtt_host)
 for sensor in sensorlist:
     try:
         print('Device Found')
@@ -82,6 +82,7 @@ for sensor in sensorlist:
     time.sleep(0.1)
 
 while True:
+    client.connect(mqtt_host)
     for sensor in sensorlist:
         try:
             sensor_name = create_sensor_name(sensor, dict_ids_names)
