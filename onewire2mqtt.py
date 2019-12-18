@@ -43,7 +43,7 @@ sensorlist = ow.Sensor('/').sensorList()
 
 def sensor_name(family, id_, dict_ids_names):
     # translage with dict_ids_name
-    sensor_base_name = dict_ids_names.get(family + "." + id_,default=family + "_" + id_)
+    sensor_base_name = dict_ids_names.get(family + "." + id_,"id_" + family + "_" + id_)
     sensor_name = "onewire_" + sensor_base_name
     return sensor_name
 
