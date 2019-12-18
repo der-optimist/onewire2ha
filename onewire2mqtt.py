@@ -33,6 +33,7 @@ dict_ids_names = {"28.AA13CA381401": "01",
                   }
 
 # wait for OWFS and MQTT, especially after reboot or 
+print('Will sleep to give OWFS and MQTT some time...')
 time.sleep(60)
 
 # init MQTT Client
