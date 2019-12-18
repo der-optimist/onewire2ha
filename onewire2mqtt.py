@@ -70,7 +70,7 @@ for sensor in sensorlist:
         sensor_name = create_sensor_name(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
         print('Value: {}'.format(float(value)))
-        print(type(value))
+        print('----------')
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
