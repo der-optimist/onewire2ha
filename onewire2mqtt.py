@@ -80,7 +80,10 @@ for sensor in sensorlist:
         print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
     time.sleep(0.1)
+client.disconnect()
+time.sleep(2)
 
+# read and send values to mqtt in a loop
 while True:
     client.connect(mqtt_host)
     for sensor in sensorlist:
@@ -94,4 +97,5 @@ while True:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
         time.sleep(0.1)
+    client.disconnect()
     time.sleep(300)
