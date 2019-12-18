@@ -5,7 +5,7 @@ from onewire2mqtt_config import *
 # knx stuff
 import asyncio
 from xknx import XKNX
-from xknx.dpt import DPT2ByteFloat
+from xknx.knx import DPT2ByteFloat
 from xknx.io import GatewayScanner, Tunnel
 from xknx.telegram import GroupAddress, PhysicalAddress, Telegram
 
