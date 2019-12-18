@@ -1,4 +1,3 @@
-#import ow
 import pyownet
 import paho.mqtt.client as mqtt
 import time
@@ -46,8 +45,6 @@ client.connect(mqtt_host)
 owproxy = pyownet.protocol.proxy(host="localhost", port=4304)
 sensorlist = owproxy.dir()
 print(sensorlist)
-#ow.init('localhost:4304')
-#sensorlist = ow.Sensor('/').sensorList()
 
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
@@ -68,7 +65,7 @@ def create_state_topic(sensor_name):
 for sensor in sensorlist:
     try:
         print('Device Found')
-        print('Address: ' + sensor)
+        print('Address: ' + sensor.replace("/",""))
         value = owproxy.read(sensor + 'temperature11')
         sensor_name = create_sensor_name(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
@@ -89,7 +86,7 @@ while True:
             sensor_name = create_sensor_name(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature11')
-            print('Sending value for sensor ' + sensor.replace("/","") + ": {}".format(value))
+            print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,value))
             client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
