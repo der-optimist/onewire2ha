@@ -2,6 +2,12 @@ import pyownet
 import paho.mqtt.client as mqtt
 import time
 from onewire2mqtt_config import *
+# knx stuff
+import asyncio
+from xknx import XKNX
+from xknx.dpt import DPT2ByteFloat
+from xknx.io import GatewayScanner, Tunnel
+from xknx.telegram import GroupAddress, PhysicalAddress, Telegram
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
@@ -45,6 +51,9 @@ owproxy = pyownet.protocol.proxy(host="localhost", port=4304)
 sensorlist = owproxy.dir()
 print(sensorlist)
 
+# init knx
+xknx = XKNX()
+
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
 
@@ -75,7 +84,7 @@ for sensor in sensorlist:
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
         config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
-        client.publish(config_topic, payload=config_payload, qos=1, retain=True)
+        client.publish(config_topic, payload=config_payload, qos=1, retain=False)
     except Exception as e:
         print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
@@ -83,19 +92,53 @@ for sensor in sensorlist:
 client.disconnect()
 time.sleep(2)
 
+
 # read and send values to mqtt in a loop
-while True:
+async def main():
     client.connect(mqtt_host)
+    xknx = XKNX()
+    gatewayscanner = GatewayScanner(xknx)
+    gateways = await gatewayscanner.scan()
+
+    if not gateways:
+        print("No Gateways found")
+        return
+
+    gateway = gateways[0]
+    src_address = PhysicalAddress("15.15.249")
+
+    print("Connecting to {}:{} from {}".format(
+        gateway.ip_addr,
+        gateway.port,
+        gateway.local_ip))
+
+    tunnel = Tunnel(
+        xknx,
+        src_address,
+        local_ip=gateway.local_ip,
+        gateway_ip=gateway.ip_addr,
+        gateway_port=gateway.port)
+
+    await tunnel.connect_udp()
+    await tunnel.connect()
+
+    await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPT2ByteFloat(50)))
+    await tunnel.connectionstate()
+    await tunnel.disconnect()
     for sensor in sensorlist:
         try:
             sensor_name = create_sensor_name(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature11')
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
-            client.publish(state_topic, payload=float(value), qos=1, retain=True)
+            client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
         time.sleep(0.1)
     client.disconnect()
-    time.sleep(300)
+    await asyncio.sleep(300)
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
+loop.close()
