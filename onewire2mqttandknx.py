@@ -7,8 +7,6 @@ import asyncio
 from xknx import XKNX
 from xknx.io import GatewayScanner, Tunnel
 from xknx.knx import DPTArray, DPTTemperature, GroupAddress, PhysicalAddress, Telegram
-#from xknx.devices import Sensor
-import random
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
@@ -39,10 +37,6 @@ dict_ids_names = {"28.AA13CA381401": "01",
                   "28.45950C161301": "serverschrank"
                   }
 
-
-# wait for OWFS and MQTT, especially after reboot or 
-print('Will sleep to give OWFS and MQTT some time...')
-#time.sleep(60)
 
 # init MQTT Client
 client = mqtt.Client(client_name )
@@ -97,8 +91,6 @@ for sensor in sensorlist:
         print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
     time.sleep(0.1)
-time.sleep(2)
-
 
 # read and send values to mqtt and knx
 async def main():
@@ -117,7 +109,7 @@ async def main():
         gateway.ip_addr,
         gateway.port,
         gateway.local_ip))
-    time.sleep(2)
+    time.sleep(1)
 
     tunnel = Tunnel(
         xknx,
@@ -142,7 +134,7 @@ async def main():
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
-        time.sleep(2)
+        time.sleep(1)
     
     # close mqtt connection
     client.disconnect()
