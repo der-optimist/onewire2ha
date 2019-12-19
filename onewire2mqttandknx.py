@@ -133,12 +133,13 @@ async def main():
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature11')
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
-            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(value)))))
+            if ga != None:
+                await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(value)))))
             client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
-        time.sleep(1)
+        time.sleep(2)
     
     # close mqtt connection
     client.disconnect()
