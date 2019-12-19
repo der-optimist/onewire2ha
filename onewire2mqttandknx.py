@@ -115,6 +115,7 @@ async def main():
         gateway.ip_addr,
         gateway.port,
         gateway.local_ip))
+    time.sleep(2)
 
     tunnel = Tunnel(
         xknx,
@@ -125,10 +126,6 @@ async def main():
 
     await tunnel.connect_udp()
     await tunnel.connect()
-
-    
-    
-    
 
     for sensor in sensorlist:
         try:
@@ -141,7 +138,7 @@ async def main():
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
-        time.sleep(0.1)
+        time.sleep(1)
     
     # close mqtt connection
     client.disconnect()
