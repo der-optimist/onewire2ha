@@ -96,59 +96,52 @@ time.sleep(2)
 
 # read and send values to mqtt in a loop
 async def main():
-    client.connect(mqtt_host)
-    xknx = XKNX()
-    gatewayscanner = GatewayScanner(xknx)
-    gateways = await gatewayscanner.scan()
-
-    if not gateways:
-        print("No Gateways found")
-        return
-
-    gateway = gateways[0]
-    src_address = PhysicalAddress("15.15.249")
-
-    print("Connecting to {}:{} from {}".format(
-        gateway.ip_addr,
-        gateway.port,
-        gateway.local_ip))
-
-    tunnel = Tunnel(
-        xknx,
-        src_address,
-        local_ip=gateway.local_ip,
-        gateway_ip=gateway.ip_addr,
-        gateway_port=gateway.port)
-
-    await tunnel.connect_udp()
-    await tunnel.connect()
-
-    await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPTArray(DPTTemperature().to_knx(float(random.randint(1,50))))))
+    while True:
+        client.connect(mqtt_host)
+        xknx = XKNX()
+        gatewayscanner = GatewayScanner(xknx)
+        gateways = await gatewayscanner.scan()
     
-    #await tunnel.connectionstate()
-    await tunnel.disconnect()
-    for sensor in sensorlist:
-        try:
-            sensor_name = create_sensor_name(sensor, dict_ids_names)
-            state_topic = create_state_topic(sensor_name)
-            value = owproxy.read(sensor + 'temperature11')
-            print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
-            client.publish(state_topic, payload=float(value), qos=1, retain=False)
-        except Exception as e:
-            print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
-            print(e) 
-        time.sleep(0.1)
-    client.disconnect()
-    await asyncio.sleep(300)
-
-def stop():
-    task.cancel()
+        if not gateways:
+            print("No Gateways found")
+            return
+    
+        gateway = gateways[0]
+        src_address = PhysicalAddress("15.15.249")
+    
+        print("Connecting to {}:{} from {}".format(
+            gateway.ip_addr,
+            gateway.port,
+            gateway.local_ip))
+    
+        tunnel = Tunnel(
+            xknx,
+            src_address,
+            local_ip=gateway.local_ip,
+            gateway_ip=gateway.ip_addr,
+            gateway_port=gateway.port)
+    
+        await tunnel.connect_udp()
+        await tunnel.connect()
+    
+        await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPTArray(DPTTemperature().to_knx(float(random.randint(1,50))))))
+        
+        #await tunnel.connectionstate()
+        await tunnel.disconnect()
+        for sensor in sensorlist:
+            try:
+                sensor_name = create_sensor_name(sensor, dict_ids_names)
+                state_topic = create_state_topic(sensor_name)
+                value = owproxy.read(sensor + 'temperature11')
+                print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
+                client.publish(state_topic, payload=float(value), qos=1, retain=False)
+            except Exception as e:
+                print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
+                print(e) 
+            time.sleep(0.1)
+        client.disconnect()
+        await asyncio.sleep(300)
 
 loop = asyncio.get_event_loop()
-loop.call_later(300, stop)
-task = loop.create_task(main())
-
-try:
-    loop.run_until_complete(task)
-except asyncio.CancelledError:
-    pass
+loop.run_until_complete(main())
+loop.close()
