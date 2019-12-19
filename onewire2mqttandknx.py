@@ -62,10 +62,12 @@ xknx = XKNX()
 def create_sensor_name_and_ga(sensor, dict_ids_names):
     # translage with dict_ids_name
     ga = None
-    sensor_base_name = dict_ids_names.get(sensor.replace("/",""),sensor.replace("/","").replace(".","_"))
-    if type(sensor_base_name) == list:
-        sensor_base_name = sensor_base_name[0]
-        ga = sensor_base_name[1]
+    sensor_translated_name = dict_ids_names.get(sensor.replace("/",""),sensor.replace("/","").replace(".","_"))
+    if type(sensor_translated_name) == list:
+        sensor_base_name = sensor_translated_name[0]
+        ga = sensor_translated_name[1]
+    else:
+        sensor_base_name = sensor_translated_name
     sensor_name = "onewire_" + sensor_base_name
     return sensor_name, ga
 
@@ -135,7 +137,7 @@ async def main():
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
             if ga != None:
                 print(ga)
-                #await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(value)))))
+                await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(value)))))
             client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
