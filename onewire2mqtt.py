@@ -2,13 +2,6 @@ import pyownet
 import paho.mqtt.client as mqtt
 import time
 from onewire2mqtt_config import *
-# knx stuff
-import asyncio
-from xknx import XKNX
-from xknx.io import GatewayScanner, Tunnel
-from xknx.knx import DPTArray, DPTTemperature, GroupAddress, PhysicalAddress, Telegram
-from xknx.devices import Sensor
-import random
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
@@ -24,13 +17,13 @@ dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AA7ECD381401": "12",
                   "28.AAC586381401": "13",
                   "28.AA5BD3381401": "14_estrich_wohnzimmer",
-                  "28.FF434F601705": "15",
+                  "28.FF434F601705": "15_estrich_wc_1",
                   "28.AA8C2A381401": "16_estrich_esszimmer",
                   "28.AA10B5381401": "17",
                   "28.AA1D32381401": "18",
                   "28.AA172D381401": "19",
-                  "28.AA9337381401": "20",
-                  "28.AAA4DA371401": "21",
+                  "28.AA9337381401": "20_estrich_bad_eg",
+                  "28.AAA4DA371401": "21_estrich_wc_2",
                   "28.AA9C461A1302": "22",
                   "28.AA3C431A1302": "23",
                   "28.AAB2CD191302": "24",
@@ -51,9 +44,6 @@ client.username_pw_set(mqtt_user, password=mqtt_passwd)
 owproxy = pyownet.protocol.proxy(host="localhost", port=4304)
 sensorlist = owproxy.dir()
 print(sensorlist)
-
-# init knx
-xknx = XKNX()
 
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
@@ -85,7 +75,7 @@ for sensor in sensorlist:
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
         config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
-        client.publish(config_topic, payload=config_payload, qos=1, retain=False)
+        client.publish(config_topic, payload=config_payload, qos=1, retain=True)
     except Exception as e:
         print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
@@ -93,60 +83,19 @@ for sensor in sensorlist:
 client.disconnect()
 time.sleep(2)
 
-
 # read and send values to mqtt in a loop
-async def main():
+while True:
     client.connect(mqtt_host)
-    xknx = XKNX()
-    gatewayscanner = GatewayScanner(xknx)
-    gateways = await gatewayscanner.scan()
-
-    if not gateways:
-        print("No Gateways found")
-        return
-
-    gateway = gateways[0]
-    src_address = PhysicalAddress("15.15.249")
-
-    print("Connecting to {}:{} from {}".format(
-        gateway.ip_addr,
-        gateway.port,
-        gateway.local_ip))
-
-    tunnel = Tunnel(
-        xknx,
-        src_address,
-        local_ip=gateway.local_ip,
-        gateway_ip=gateway.ip_addr,
-        gateway_port=gateway.port)
-
-    await tunnel.connect_udp()
-    await tunnel.connect()
-
-    await tunnel.send_telegram(Telegram(GroupAddress('12/7/0'), payload=DPTArray(DPTTemperature().to_knx(float(random.randint(1,50))))))
-    
-    #await tunnel.connectionstate()
-    await tunnel.disconnect()
     for sensor in sensorlist:
         try:
             sensor_name = create_sensor_name(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature11')
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
-            client.publish(state_topic, payload=float(value), qos=1, retain=False)
+            client.publish(state_topic, payload=float(value), qos=1, retain=True)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
         time.sleep(0.1)
     client.disconnect()
-    await asyncio.sleep(300)
-
-loop = asyncio.get_event_loop()
-try:
-    asyncio.ensure_future(main())
-    loop.run_forever()
-except KeyboardInterrupt:
-    pass
-finally:
-    print("Closing Loop")
-    loop.close()
+    time.sleep(300)
