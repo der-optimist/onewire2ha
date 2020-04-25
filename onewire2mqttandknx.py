@@ -77,7 +77,7 @@ for sensor in sensorlist:
     try:
         print('Device Found')
         print('Address: ' + sensor.replace("/",""))
-        value = owproxy.read(sensor + 'temperature11')
+        value = owproxy.read(sensor + 'temperature12')
         sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
         print('Value: {}'.format(float(value)))
@@ -125,7 +125,7 @@ async def main():
         try:
             sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
-            value = owproxy.read(sensor + 'temperature11')
+            value = owproxy.read(sensor + 'temperature12')
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
             if ga != None:
                 print(ga)
