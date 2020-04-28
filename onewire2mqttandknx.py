@@ -78,6 +78,13 @@ for sensor in sensorlist:
         print('Device Found')
         print('Address: ' + sensor.replace("/",""))
         value = owproxy.read(sensor + 'temperature12')
+        if float(value) > 80.0:
+            time.sleep(0.1)
+            value = owproxy.read(sensor + 'temperature12')
+            if float(value) > 80.0:
+                print('value not feasable, above 80C')
+                time.sleep(0.1)
+                continue
         sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
         print('Sensor Name: ' + sensor_name)
         print('Value: {}'.format(float(value)))
@@ -126,6 +133,13 @@ async def main():
             sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature12')
+            if float(value) > 80.0:
+                time.sleep(0.1)
+                value = owproxy.read(sensor + 'temperature12')
+                if float(value) > 80.0:
+                    print('value not feasable, above 80C')
+                    time.sleep(0.1)
+                    continue
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
             if ga != None:
                 print(ga)
