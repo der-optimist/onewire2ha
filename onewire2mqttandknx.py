@@ -6,7 +6,9 @@ from onewire2mqtt_config import *
 import asyncio
 from xknx import XKNX
 from xknx.io import GatewayScanner, Tunnel
-from xknx.knx import DPTArray, DPTTemperature, GroupAddress, PhysicalAddress, Telegram
+from xknx.knx import DPTArray, DPTTemperature, DPTHumidity, GroupAddress, PhysicalAddress, Telegram
+# DHT22 sensor stuff
+import Adafruit_DHT
 
 dict_ids_names = {"28.AA13CA381401": "01",
                   "28.AAFAB1381401": "02",
@@ -50,11 +52,17 @@ print(sensorlist)
 # init knx
 xknx = XKNX()
 
+# init DHT22 sensor
+DHT_SENSOR = Adafruit_DHT.DHT22
+DHT_PIN = 4
+knx_ga_temperature = "12/0/1"
+knx_ga_humidity = "12/0/1"
+
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
 
 def create_sensor_name_and_ga(sensor, dict_ids_names):
-    # translage with dict_ids_name
+    # translate with dict_ids_name
     ga = None
     sensor_translated_name = dict_ids_names.get(sensor.replace("/",""),sensor.replace("/","").replace(".","_"))
     if type(sensor_translated_name) == list:
@@ -73,6 +81,7 @@ def create_state_topic(sensor_name):
 
 # define sensors in home assistant via MQTT Discovery
 client.connect(mqtt_host)
+# onewire sensors
 for sensor in sensorlist:
     try:
         print('Device Found')
@@ -98,6 +107,38 @@ for sensor in sensorlist:
         print('Error during config of sensor ' + sensor.replace("/",""))
         print(e)
     time.sleep(0.1)
+# dht sensor
+humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
+# temperature
+try:
+    sensor_name = "dht22_waschkueche_temperature"
+    print('Sensor Name: ' + sensor_name)
+    print('Value: {}'.format(float(temperature)))
+    print('----------')
+    config_topic = create_config_topic(sensor_name)
+    state_topic = create_state_topic(sensor_name)
+    device_class = "temperature"
+    config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+    client.publish(config_topic, payload=config_payload, qos=1, retain=False)
+except Exception as e:
+    print('Error during config of sensor ' + sensor_name)
+    print(e)
+time.sleep(0.1)
+# humidity
+try:
+    sensor_name = "dht22_waschkueche_humidity"
+    print('Sensor Name: ' + sensor_name)
+    print('Value: {}'.format(float(temperature)))
+    print('----------')
+    config_topic = create_config_topic(sensor_name)
+    state_topic = create_state_topic(sensor_name)
+    device_class = "humidity"
+    config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+    client.publish(config_topic, payload=config_payload, qos=1, retain=False)
+except Exception as e:
+    print('Error during config of sensor ' + sensor_name)
+    print(e)
+time.sleep(0.1)
 
 # read and send values to mqtt and knx
 async def main():
@@ -128,6 +169,7 @@ async def main():
     await tunnel.connect_udp()
     await tunnel.connect()
 
+    # onewire sensors
     for sensor in sensorlist:
         try:
             sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
@@ -149,6 +191,32 @@ async def main():
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
             print(e) 
         time.sleep(1)
+    # dht22 sensor
+    humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
+    # temperature
+    try:
+        sensor_name = "dht22_waschkueche_temperature"
+        ga = knx_ga_temperature
+        state_topic = create_state_topic(sensor_name)
+        print("Sending value for sensor {}: {}".format(sensor_name,float(temperature)))
+        await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(temperature)))))
+        client.publish(state_topic, payload=float(temperature), qos=1, retain=False)
+    except Exception as e:
+        print('Error during sending value of sensor ' + sensor_name + ":")
+        print(e) 
+    time.sleep(1)
+    # humidity
+    try:
+        sensor_name = "dht22_waschkueche_humidity"
+        ga = knx_ga_humidity
+        state_topic = create_state_topic(sensor_name)
+        print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
+        await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity)))))
+        client.publish(state_topic, payload=float(humidity), qos=1, retain=False)
+    except Exception as e:
+        print('Error during sending value of sensor ' + sensor_name + ":")
+        print(e) 
+    time.sleep(1)
     
     # close mqtt connection
     client.disconnect()
