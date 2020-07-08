@@ -110,35 +110,37 @@ for sensor in sensorlist:
 # dht sensor
 humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
 # temperature
-try:
-    sensor_name = "dht22_waschkueche_temperature"
-    print('Sensor Name: ' + sensor_name)
-    print('Value: {}'.format(float(temperature)))
-    print('----------')
-    config_topic = create_config_topic(sensor_name)
-    state_topic = create_state_topic(sensor_name)
-    device_class = "temperature"
-    config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
-    client.publish(config_topic, payload=config_payload, qos=1, retain=False)
-except Exception as e:
-    print('Error during config of sensor ' + sensor_name)
-    print(e)
-time.sleep(0.1)
+if temperature is not None:
+    try:
+        sensor_name = "dht22_waschkueche_temperature"
+        print('Sensor Name: ' + sensor_name)
+        print('Value: {}'.format(float(temperature)))
+        print('----------')
+        config_topic = create_config_topic(sensor_name)
+        state_topic = create_state_topic(sensor_name)
+        device_class = "temperature"
+        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+        client.publish(config_topic, payload=config_payload, qos=1, retain=False)
+    except Exception as e:
+        print('Error during config of sensor ' + sensor_name)
+        print(e)
+    time.sleep(0.1)
 # humidity
-try:
-    sensor_name = "dht22_waschkueche_humidity"
-    print('Sensor Name: ' + sensor_name)
-    print('Value: {}'.format(float(temperature)))
-    print('----------')
-    config_topic = create_config_topic(sensor_name)
-    state_topic = create_state_topic(sensor_name)
-    device_class = "humidity"
-    config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
-    client.publish(config_topic, payload=config_payload, qos=1, retain=False)
-except Exception as e:
-    print('Error during config of sensor ' + sensor_name)
-    print(e)
-time.sleep(0.1)
+if temperature is not None:
+    try:
+        sensor_name = "dht22_waschkueche_humidity"
+        print('Sensor Name: ' + sensor_name)
+        print('Value: {}'.format(float(temperature)))
+        print('----------')
+        config_topic = create_config_topic(sensor_name)
+        state_topic = create_state_topic(sensor_name)
+        device_class = "humidity"
+        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+        client.publish(config_topic, payload=config_payload, qos=1, retain=False)
+    except Exception as e:
+        print('Error during config of sensor ' + sensor_name)
+        print(e)
+    time.sleep(0.1)
 
 # read and send values to mqtt and knx
 async def main():
@@ -194,29 +196,31 @@ async def main():
     # dht22 sensor
     humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
     # temperature
-    try:
-        sensor_name = "dht22_waschkueche_temperature"
-        ga = knx_ga_temperature
-        state_topic = create_state_topic(sensor_name)
-        print("Sending value for sensor {}: {}".format(sensor_name,float(temperature)))
-        await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(temperature)))))
-        client.publish(state_topic, payload=float(temperature), qos=1, retain=False)
-    except Exception as e:
-        print('Error during sending value of sensor ' + sensor_name + ":")
-        print(e) 
-    time.sleep(1)
+    if temperature is not None:
+        try:
+            sensor_name = "dht22_waschkueche_temperature"
+            ga = knx_ga_temperature
+            state_topic = create_state_topic(sensor_name)
+            print("Sending value for sensor {}: {}".format(sensor_name,float(temperature)))
+            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(temperature)))))
+            client.publish(state_topic, payload=float(temperature), qos=1, retain=False)
+        except Exception as e:
+            print('Error during sending value of sensor ' + sensor_name + ":")
+            print(e) 
+        time.sleep(1)
     # humidity
-    try:
-        sensor_name = "dht22_waschkueche_humidity"
-        ga = knx_ga_humidity
-        state_topic = create_state_topic(sensor_name)
-        print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
-        await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity)))))
-        client.publish(state_topic, payload=float(humidity), qos=1, retain=False)
-    except Exception as e:
-        print('Error during sending value of sensor ' + sensor_name + ":")
-        print(e) 
-    time.sleep(1)
+    if humidity is not None:
+        try:
+            sensor_name = "dht22_waschkueche_humidity"
+            ga = knx_ga_humidity
+            state_topic = create_state_topic(sensor_name)
+            print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
+            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity)))))
+            client.publish(state_topic, payload=float(humidity), qos=1, retain=False)
+        except Exception as e:
+            print('Error during sending value of sensor ' + sensor_name + ":")
+            print(e) 
+        time.sleep(1)
     
     # close mqtt connection
     client.disconnect()
