@@ -57,7 +57,7 @@ DHT_SENSOR = Adafruit_DHT.DHT22
 DHT_PIN = 4
 knx_ga_temperature = "12/0/13"
 knx_ga_humidity = "12/0/14"
-dht_humidity_offset = float(-1)
+dht_humidity_offset = float(0)
 
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
