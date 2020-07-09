@@ -57,6 +57,7 @@ DHT_SENSOR = Adafruit_DHT.DHT22
 DHT_PIN = 4
 knx_ga_temperature = "12/0/13"
 knx_ga_humidity = "12/0/14"
+dht_humidity_offset = float(-1)
 
 # delete old sensor entry from tesing phase. Case Sensitive => Capital Hex Letters!
 #client.publish("homeassistant/sensor/onewire_28_45950C161301/config", payload='', qos=1, retain=False)
@@ -218,7 +219,7 @@ async def main():
             ga = knx_ga_humidity
             state_topic = create_state_topic(sensor_name)
             print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
-            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity)))))
+            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity + dht_humidity_offset)))))
             client.publish(state_topic, payload=float(humidity), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor_name + ":")
