@@ -177,6 +177,9 @@ async def main():
             sensor_name, ga = create_sensor_name_and_ga(sensor, dict_ids_names)
             state_topic = create_state_topic(sensor_name)
             value = owproxy.read(sensor + 'temperature12')
+            if value == None:
+                print('value is none, will continue')
+                continue
             if float(value) > 80.0:
                 time.sleep(0.1)
                 value = owproxy.read(sensor + 'temperature12')
