@@ -102,7 +102,7 @@ for sensor in sensorlist:
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
-        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "unit_of_measurement": "°C", "state_topic": "' + state_topic + '"}'
         client.publish(config_topic, payload=config_payload, qos=1, retain=False)
     except Exception as e:
         print('Error during config of sensor ' + sensor.replace("/",""))
@@ -120,23 +120,23 @@ if temperature is not None:
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
         device_class = "temperature"
-        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "unit_of_measurement": "°C", "state_topic": "' + state_topic + '"}'
         client.publish(config_topic, payload=config_payload, qos=1, retain=False)
     except Exception as e:
         print('Error during config of sensor ' + sensor_name)
         print(e)
     time.sleep(0.1)
 # humidity
-if temperature is not None:
+if humidity is not None:
     try:
         sensor_name = "dht22_waschkueche_humidity"
         print('Sensor Name: ' + sensor_name)
-        print('Value: {}'.format(float(temperature)))
+        print('Value: {}'.format(float(humidity)))
         print('----------')
         config_topic = create_config_topic(sensor_name)
         state_topic = create_state_topic(sensor_name)
         device_class = "humidity"
-        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "state_topic": "' + state_topic + '"}'
+        config_payload = '{"name": "' + sensor_name + '", "device_class": "' + device_class + '", "unit_of_measurement": "%", "state_topic": "' + state_topic + '"}'
         client.publish(config_topic, payload=config_payload, qos=1, retain=False)
     except Exception as e:
         print('Error during config of sensor ' + sensor_name)
@@ -207,7 +207,7 @@ async def main():
             state_topic = create_state_topic(sensor_name)
             print("Sending value for sensor {}: {}".format(sensor_name,float(temperature)))
             await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(temperature)))))
-            client.publish(state_topic, payload=float(temperature), qos=1, retain=False)
+            client.publish(state_topic, payload=round(float(temperature),1), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor_name + ":")
             print(e) 
@@ -220,7 +220,7 @@ async def main():
             state_topic = create_state_topic(sensor_name)
             print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
             await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity + dht_humidity_offset)))))
-            client.publish(state_topic, payload=float(humidity), qos=1, retain=False)
+            client.publish(state_topic, payload=round(float(humidity),1), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor_name + ":")
             print(e) 
