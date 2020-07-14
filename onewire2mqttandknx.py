@@ -111,7 +111,7 @@ for sensor in sensorlist:
 # dht sensor
 humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
 # temperature
-if temperature is not None:
+if temperature is not None and float(temperature) < 80.0:
     try:
         sensor_name = "dht22_waschkueche_temperature"
         print('Sensor Name: ' + sensor_name)
@@ -127,7 +127,7 @@ if temperature is not None:
         print(e)
     time.sleep(0.1)
 # humidity
-if humidity is not None:
+if humidity is not None and float(humidity) < 100.0:
     try:
         sensor_name = "dht22_waschkueche_humidity"
         print('Sensor Name: ' + sensor_name)
@@ -200,7 +200,7 @@ async def main():
     # dht22 sensor
     humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
     # temperature
-    if temperature is not None:
+    if temperature is not None and float(temperature) < 80.0:
         try:
             sensor_name = "dht22_waschkueche_temperature"
             ga = knx_ga_temperature
@@ -213,7 +213,7 @@ async def main():
             print(e) 
         time.sleep(1)
     # humidity
-    if humidity is not None:
+    if humidity is not None and float(humidity) < 100.0:
         try:
             sensor_name = "dht22_waschkueche_humidity"
             ga = knx_ga_humidity
