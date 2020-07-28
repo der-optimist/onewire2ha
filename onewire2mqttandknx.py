@@ -1,3 +1,4 @@
+import requests
 import pyownet
 import paho.mqtt.client as mqtt
 import time
@@ -191,7 +192,11 @@ async def main():
             print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
             if ga != None:
                 print(ga)
-                await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(value)))))
+                payload=DPTArray(DPTTemperature().to_knx(float(value)))
+                if payload is not None:
+                    await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=payload))
+                else:
+                    requests.get("https://api.simplepush.io/send/URbwOG/KNXpayload/warNone")
             client.publish(state_topic, payload=float(value), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
@@ -206,7 +211,11 @@ async def main():
             ga = knx_ga_temperature
             state_topic = create_state_topic(sensor_name)
             print("Sending value for sensor {}: {}".format(sensor_name,float(temperature)))
-            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTTemperature().to_knx(float(temperature)))))
+            payload=DPTArray(DPTTemperature().to_knx(float(temperature)))
+            if payload is not None:
+                await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=payload))
+            else:
+                requests.get("https://api.simplepush.io/send/URbwOG/KNXpayload/warNone")
             client.publish(state_topic, payload=round(float(temperature),1), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor_name + ":")
@@ -219,7 +228,11 @@ async def main():
             ga = knx_ga_humidity
             state_topic = create_state_topic(sensor_name)
             print("Sending value for sensor {}: {}".format(sensor_name,float(humidity)))
-            await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=DPTArray(DPTHumidity().to_knx(float(humidity + dht_humidity_offset)))))
+            payload=DPTArray(DPTHumidity().to_knx(float(humidity + dht_humidity_offset)))
+            if payload is not None:
+                await tunnel.send_telegram(Telegram(GroupAddress(ga), payload=payload))
+            else:
+                requests.get("https://api.simplepush.io/send/URbwOG/KNXpayload/warNone")
             client.publish(state_topic, payload=round(float(humidity),1), qos=1, retain=False)
         except Exception as e:
             print('Error during sending value of sensor ' + sensor_name + ":")
