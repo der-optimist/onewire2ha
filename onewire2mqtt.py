@@ -34,10 +34,6 @@ dict_ids_names = {"28.AA13CA381401": "01",
                   "28.45950C161301": "serverschrank"
                   }
 
-                                                     
-                                                      
-               
-
 # init MQTT Client
 client = mqtt.Client(client_name )
 client.username_pw_set(mqtt_user, password=mqtt_passwd)
