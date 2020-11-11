@@ -109,6 +109,8 @@ if temperature is not None and float(temperature) < 80.0:
         print('Error during config of sensor ' + sensor_name)
         print(e)
     time.sleep(1)
+else:
+    print('Can not process DHT temperature: {}'.format(temperature))
 # humidity
 if humidity is not None and float(humidity) < 100.0:
     try:
@@ -125,6 +127,8 @@ if humidity is not None and float(humidity) < 100.0:
         print('Error during config of sensor ' + sensor_name)
         print(e)
     time.sleep(1)
+else:
+    print('Can not process DHT humidity: {}'.format(humidity))
 
 # read and send values to mqtt
 # onewire sensors
@@ -162,6 +166,8 @@ if temperature is not None and float(temperature) < 80.0:
         print('Error during sending value of sensor ' + sensor_name + ":")
         print(e) 
     time.sleep(1)
+else:
+    print('Can not process DHT temperature: {}'.format(temperature))
 # humidity
 if humidity is not None and float(humidity) < 100.0:
     try:
@@ -173,6 +179,8 @@ if humidity is not None and float(humidity) < 100.0:
         print('Error during sending value of sensor ' + sensor_name + ":")
         print(e) 
     time.sleep(1)
+else:
+    print('Can not process DHT humidity: {}'.format(humidity))
 
 # close mqtt connection
 client.disconnect()
