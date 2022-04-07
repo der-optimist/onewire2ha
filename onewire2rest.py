@@ -68,7 +68,7 @@ for sensor in sensorlist:
         json_data = {'state': float(value), 'attributes': attributes}
         api_url = api_base_url + 'states/sensor.' + sensor_name
         response = requests.post(api_url, headers=headers, json=json_data)
-        print(response.text)
+#        print(response.text)
     except Exception as e:
         print('Error during sending value of sensor ' + sensor.replace("/","") + ":")
         print(e) 
