@@ -65,7 +65,7 @@ for sensor in sensorlist:
                 time.sleep(0.1)
                 continue
         print('Sending value for sensor ' + sensor.replace("/","") + " ({}): {}".format(sensor_name,float(value)))
-        json_data = {'state': str(value), 'attributes': attributes}
+        json_data = {'state': float(value), 'attributes': attributes}
         api_url = api_base_url + 'states/sensor.' + sensor_name
         response = requests.post(api_url, headers=headers, json=json_data)
         print(response.text)
